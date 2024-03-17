@@ -1,0 +1,109 @@
+import React, { useState } from 'react';
+
+const studentsData = [
+  { id: 1, name: 'John Doe', grades: [85, 90, 78], attendance: 80 },
+  { id: 2, name: 'Jane Smith', grades: [75, 88, 92], attendance: 95 },
+  { id: 3, name: 'Alice Johnson', grades: [92, 87, 95], attendance: 70 },
+  // Add more student data as needed
+];
+
+const StudentProgressTracker = () => {
+  const [students, setStudents] = useState(studentsData);
+  const [sortBy, setSortBy] = useState(null);
+  const [filterBy, setFilterBy] = useState(null);
+
+  const sortStudents = (key) => {
+    const sortedStudents = [...students].sort((a, b) => {
+      if (key === 'grades') {
+        const avgGradeA = a.grades.reduce((acc, val) => acc + val, 0) / a.grades.length;
+        const avgGradeB = b.grades.reduce((acc, val) => acc + val, 0) / b.grades.length;
+        return avgGradeA - avgGradeB;
+      } else {
+        return a[key] - b[key];
+      }
+    });
+    setStudents(sortedStudents);
+    setSortBy(key);
+  };
+
+  const filterStudents = (progress) => {
+    const filteredStudents = studentsData.filter(student => {
+      // Assuming progress ranges: low: 0-60, moderate: 61-80, high: 81-100
+      const avgGrade = student.grades.reduce((acc, val) => acc + val, 0) / student.grades.length;
+      if (progress === 'low') {
+        return avgGrade <= 60;
+      } else if (progress === 'moderate') {
+        return avgGrade > 60 && avgGrade <= 80;
+      } else {
+        return avgGrade > 80;
+      }
+    });
+    setStudents(filteredStudents);
+    setFilterBy(progress);
+  };
+
+  const resetFilters = () => {
+    setStudents(studentsData);
+    setSortBy(null);
+    setFilterBy(null);
+  };
+
+  return (
+    <div>
+      <h2>Student Progress Tracker</h2>
+      <button onClick={() => resetFilters()}>Reset Filters</button>
+      <div>
+        <label>Sort By:</label>
+        <select onChange={(e) => sortStudents(e.target.value)}>
+          <option value="">--Select--</option>
+          <option value="grades">Average Grade</option>
+          <option value="attendance">Attendance</option>
+        </select>
+      </div>
+      <div>
+        <label>Filter By Progress:</label>
+        <select onChange={(e) => filterStudents(e.target.value)}>
+          <option value="">--Select--</option>
+          <option value="low">Low</option>
+          <option value="moderate">Moderate</option>
+          <option value="high">High</option>
+        </select>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Average Grade</th>
+            <th>Attendance %</th>
+            <th>Overall Progress</th>
+          </tr>
+        </thead>
+        <tbody>
+          {students.map(student => (
+            <tr key={student.id}>
+              <td>{student.id}</td>
+              <td>{student.name}</td>
+              <td>
+                {student.grades.reduce((acc, val) => acc + val, 0) / student.grades.length}
+              </td>
+              <td>{student.attendance}</td>
+              <td>
+                {/* Assuming progress ranges: low: 0-60, moderate: 61-80, high: 81-100 */}
+                {student.grades.reduce((acc, val) => acc + val, 0) / student.grades.length <= 60 ? (
+                  <span style={{ color: 'red' }}>Low</span>
+                ) : student.grades.reduce((acc, val) => acc + val, 0) / student.grades.length <= 80 ? (
+                  <span style={{ color: 'yellow' }}>Moderate</span>
+                ) : (
+                  <span style={{ color: 'green' }}>High</span>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+};
+
+export default StudentProgressTracker;
